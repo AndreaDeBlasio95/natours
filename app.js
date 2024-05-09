@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const { get } = require('http');
 const app = express();
 const port = 3000;
 
@@ -27,7 +28,7 @@ const tours = JSON.parse(
 );
 
 // get all tours
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
     results: tours.length,
@@ -35,10 +36,10 @@ app.get('/api/v1/tours', (req, res) => {
       tours, // we can use just tours as the key and value are the same
     },
   });
-});
+};
 
 // get a single tour
-app.get('/api/v1/tours/:id', (req, res) => {
+const getTour = (req, res) => {
   // :id is a URL parameter
   // we can use ? to make a parameter optional, i.e. /api/v1/tours/:id/:x?
   // req.params is an object that contains all the parameters that are in the URL
@@ -47,14 +48,15 @@ app.get('/api/v1/tours/:id', (req, res) => {
   // convert the id to a number
   const id = req.params.id * 1; // multiply by 1 to convert to a number
 
-  if (id > tours.length) {
+  const tour = tours.find((el) => el.id === parseInt(req.params.id));
+
+  //if (id > tours.length) {
+  if (!tour) {
     return res.status(404).json({
       status: 'fail',
       message: 'Invalid ID',
     });
   }
-
-  const tour = tours.find((el) => el.id === parseInt(req.params.id));
 
   res.status(200).json({
     status: 'success',
@@ -62,10 +64,10 @@ app.get('/api/v1/tours/:id', (req, res) => {
       tour, // we can use just tours as the key and value are the same
     },
   });
-});
+};
 
 // create a new tour
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body); // merge the new id with the body of the request, which contains the new tour data.
 
@@ -83,8 +85,51 @@ app.post('/api/v1/tours', (req, res) => {
       });
     }
   );
-});
+};
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// update a tour
+const updateTour = (req, res) => {
+  if (req.params.id * 1 > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: '<Updated tour here...>',
+    },
+  });
+};
+
+// delete a tour
+const deleteTour = (req, res) => {
+  if (req.params.id * 1 > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+};
+
+// old routing system
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.post('/api/v1/tours', createTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+// improving routes
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+app
+  .route('/api/v1/tours/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
