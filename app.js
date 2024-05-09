@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const { get } = require('http');
+
 const app = express();
 const port = 3000;
 
@@ -120,7 +121,7 @@ const deleteTour = (req, res) => {
 };
 
 // old routing system
-// app.get('/api/v1/tours', getAllTours);
+//app.get('/api/v1/tours', getAllTours);
 // app.get('/api/v1/tours/:id', getTour);
 // app.post('/api/v1/tours', createTour);
 // app.patch('/api/v1/tours/:id', updateTour);
@@ -133,3 +134,7 @@ app
   .get(getTour)
   .patch(updateTour)
   .delete(deleteTour);
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
